@@ -1,0 +1,48 @@
+spring:
+  liquibase:
+    change-log: classpath:db/db.changelog-master.xml
+    enabled: true
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        jdbc:
+          batch_size: 256
+        order_updates: true
+        order_inserts: true
+        batch_versioned_data: true
+    show-sql: false
+  application:
+    name: profiles-container
+management:
+  otlp:
+    metrics:
+      export:
+        enabled: false
+  tracing:
+    baggage:
+      enabled: true
+    propagation:
+      type: b3
+    sampling:
+      probability: 1
+    enabled: ${ENABLE_TRACING:false}
+tracing:
+  url: ${JAEGER_URL:http://localhost:4317}
+logging:
+  pattern:
+    correlation: '[${spring.application.name:},%X{traceId:-},%X{spanId:-}]'
+  logback:
+    rollingpolicy:
+      max-file-size: 50MB
+  file:
+    name: profiles-container.log
+  include-application-name: false

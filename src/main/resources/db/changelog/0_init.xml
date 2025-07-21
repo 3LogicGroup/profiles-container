@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="profiles" author="dzaitsev">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="profiles"/>
+            </not>
+        </preConditions>
+        <createTable tableName="profiles">
+            <column name="uid" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="profilePK"/>
+            </column>
+            <column name="profile_name" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_create" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_update" type="timestamp">
+                <constraints nullable="true"/>
+            </column>
+            <column name="active" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_name" type="varchar(255)"/>
+            <column name="product_name_rus" type="varchar(255)"/>
+            <column name="device_type" type="varchar(50)"/>
+            <column name="model" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="profiles_data" author="dzaitsev">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="profiles_data"/>
+            </not>
+        </preConditions>
+        <createTable tableName="profiles_data">
+            <column name="profile_uid" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="protocol" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="profile_data" type="jsonb">
+                <constraints nullable="false"/>
+            </column>
+            <column name="scrape_interval" type="int4"/>
+            <column name="scrape_timeout" type="int4"/>
+        </createTable>
+        <addPrimaryKey tableName="profiles_data" columnNames="profile_uid, protocol"/>
+        <addForeignKeyConstraint baseTableName="profiles_data" baseColumnNames="profile_uid"
+                                 constraintName="profile_data_profile_fk"
+                                 referencedTableName="profiles"
+                                 referencedColumnNames="uid" onUpdate="CASCADE" onDelete="CASCADE"/>
+    </changeSet>
+    <changeSet id="init_sql" author="dzaitsev">
+        <sqlFile path="db/init.sql"/>
+    </changeSet>
+</databaseChangeLog>
