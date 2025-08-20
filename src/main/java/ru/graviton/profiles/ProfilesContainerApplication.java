@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class ProfilesContainerApplication {
 
     public static void main(String[] args) {
+        System.setProperty("jdk.internal.httpclient.disableHostnameVerification","true");
         SpringApplication.run(ProfilesContainerApplication.class, args);
 
     }

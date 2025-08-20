@@ -60,4 +60,59 @@
     <changeSet id="init_sql" author="dzaitsev">
         <sqlFile path="db/init.sql"/>
     </changeSet>
+    <changeSet id="create_command_table" author="dzaitsev">
+
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="commands"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="commands">
+
+            <column name="uid" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="commandPK"/>
+            </column>
+            <column name="command_name" type="varchar(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_active" type="boolean"/>
+
+            <column name="body" type="jsonb">
+                <constraints nullable="false"/>
+            </column>
+            <column name="profile_uid" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_create" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_update" type="timestamp">
+                <constraints nullable="true"/>
+            </column>
+            <column name="description" type="varchar(4000)"/>
+            <column name="command_type" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="target" type="varchar(400)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="commands" indexName="commandUIdx" unique="true">
+            <column name="command_type"/>
+            <column name="profile_uid"/>
+            <column name="command_name"/>
+            <column name="target"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="add_service_name" author="dzaitsev">
+        <addColumn tableName="commands">
+            <column name="service_name" type="varchar(200)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="add_rus_name" author="dzaitsev">
+        <addColumn tableName="commands">
+            <column name="rus_name" type="varchar(200)"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>
