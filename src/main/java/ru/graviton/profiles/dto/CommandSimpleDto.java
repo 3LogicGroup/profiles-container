@@ -42,4 +42,6 @@ public class CommandSimpleDto {
 
     private CommandType commandType;
 
+    private String target;
+
 }
