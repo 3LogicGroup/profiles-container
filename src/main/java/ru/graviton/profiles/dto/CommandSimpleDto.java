@@ -36,10 +36,10 @@ public class CommandSimpleDto {
     @NotBlank
     private UUID profileUid;
 
-    @Column(name = "service_name")
     private String serviceName;
 
-    @Column(name = "rus_name")
     private String rusName;
+
+    private CommandType commandType;
 
 }
