@@ -54,6 +54,11 @@ public enum ErrorCode {
     ASYNC_REQUEST_NOT_CANCELLED("Невозможно отменить запрос", HttpStatus.BAD_REQUEST),
     REPORT_REQUEST_NOT_VALID("Переданы некорректные параметры", HttpStatus.BAD_REQUEST),
     UNEXPECTED_REPORT_ERROR("Неожиданная ошибка формирования отчета", HttpStatus.INTERNAL_SERVER_ERROR),
+    ALERT_GROUP_NOT_FOUND("Группа правил проверки метрик не найдена", HttpStatus.NOT_FOUND),
+    ALERT_RULE_NOT_FOUND("Правило проверки метрик не найдено", HttpStatus.NOT_FOUND),
+    NOTIFICATION_RULE_NOT_FOUND("Правило оповещения не найдено", HttpStatus.NOT_FOUND),
+    LINK_ESCALATION_RULE_ERROR("Невозможно задать правило эскалации", HttpStatus.BAD_REQUEST),
+    CREATE_NOTIFICATION_RULE_REQUEST_NOT_VALID("Запрос на создание правила оповещения не корректный", HttpStatus.BAD_REQUEST);
     ;
     private final String text;
     private final HttpStatus status;

@@ -5,7 +5,6 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import ru.graviton.profiles.dto.DeviceType;
 
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -17,7 +16,7 @@ import java.util.UUID;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProfileEntity {
+public class ProfileEntity extends AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID uid;
@@ -45,22 +44,5 @@ public class ProfileEntity {
     @Column(name = "device_type")
     @Enumerated(EnumType.STRING)
     private DeviceType deviceType;
-
-    @Column(name = "date_update")
-    private LocalDateTime dateUpdate;
-
-    @Column(name = "date_create")
-    private LocalDateTime dateCreate;
-
-    @PrePersist
-    private void prePersist() {
-        dateCreate = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    private void preUpdate() {
-        dateUpdate = LocalDateTime.now();
-    }
-
 
 }

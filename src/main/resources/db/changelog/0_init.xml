@@ -115,4 +115,136 @@
             <column name="rus_name" type="varchar(200)"/>
         </addColumn>
     </changeSet>
+    <changeSet id="alert_rules" author="dzaitsev">
+        <createTable tableName="alert_groups">
+            <column name="uid" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="alertGroupPK"/>
+            </column>
+            <column name="enabled" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="group_name" type="varchar(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(1000)"/>
+            <column name="date_create" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_update" type="timestamp">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+        <createTable tableName="alert_rules">
+            <column name="uid" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="alertRulePK"/>
+            </column>
+            <column name="rule_name" type="varchar(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(1000)"/>
+            <column name="enabled" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rule_expression" type="varchar(4000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="severity" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_create" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_update" type="timestamp">
+                <constraints nullable="true"/>
+            </column>
+            <column name="alert_rule_type" type="varchar(50)"/>
+            <column name="is_prometheus_expression" type="boolean"/>
+        </createTable>
+        <createTable tableName="notification_rules">
+            <column name="uid" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="notificationRulePK"/>
+            </column>
+            <column name="notification_type" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notification_name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notification_description" type="varchar(1000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notification_rule" type="jsonb">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fire_message_template" type="varchar(8000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="resolve_message_template" type="varchar(8000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="alert_delay" type="int4">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_create" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_update" type="timestamp">
+                <constraints nullable="true"/>
+            </column>
+            <column name="enabled" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="initial_delay" type="int4"/>
+        </createTable>
+        <createTable tableName="alert_rules_notifications">
+            <column name="rule_uid" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notification_uid" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="alert_rules_notifications" columnNames="notification_uid, rule_uid"/>
+
+        <addForeignKeyConstraint baseTableName="alert_rules_notifications" baseColumnNames="rule_uid"
+                                 constraintName="alert_rules_notifications_rule_fk"
+                                 referencedTableName="alert_rules"
+                                 referencedColumnNames="uid"/>
+        <addForeignKeyConstraint baseTableName="alert_rules_notifications" baseColumnNames="notification_uid"
+                                 constraintName="alert_rules_notifications_notification_fk"
+                                 referencedTableName="notification_rules"
+                                 referencedColumnNames="uid"/>
+
+        <createTable tableName="alert_groups_notifications">
+            <column name="group_uid" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notification_uid" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="alert_groups_notifications" columnNames="notification_uid, group_uid"/>
+        <addForeignKeyConstraint baseTableName="alert_groups_notifications" baseColumnNames="group_uid"
+                                 constraintName="alert_groups_notifications_rule_fk"
+                                 referencedTableName="alert_groups"
+                                 referencedColumnNames="uid"/>
+        <addForeignKeyConstraint baseTableName="alert_groups_notifications" baseColumnNames="notification_uid"
+                                 constraintName="alert_groups_notifications_notification_fk"
+                                 referencedTableName="notification_rules"
+                                 referencedColumnNames="uid"/>
+        <createTable tableName="alert_groups_rules">
+            <column name="group_uid" type="uuid"/>
+            <column name="rule_uid" type="uuid"/>
+        </createTable>
+        <addPrimaryKey tableName="alert_groups_rules" columnNames="rule_uid, group_uid"/>
+        <addForeignKeyConstraint baseTableName="alert_groups_rules" baseColumnNames="group_uid"
+                                 constraintName="alert_groups_rules_groups_fk"
+                                 referencedTableName="alert_groups"
+                                 referencedColumnNames="uid"/>
+        <addForeignKeyConstraint baseTableName="alert_groups_rules" baseColumnNames="rule_uid"
+                                 constraintName="alert_groups_rules_rules_fk"
+                                 referencedTableName="alert_rules"
+                                 referencedColumnNames="uid"/>
+        <sqlFile path="db/init_alerts.sql"/>
+    </changeSet>
 </databaseChangeLog>

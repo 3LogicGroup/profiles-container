@@ -7,7 +7,6 @@ import org.hibernate.annotations.Type;
 import ru.graviton.profiles.dto.ActionDto;
 import ru.graviton.profiles.dto.CommandType;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -17,17 +16,11 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommandEntity {
+public class CommandEntity extends AbstractEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID uid;
-
-    @Column(name = "date_update")
-    private LocalDateTime dateUpdate;
-
-    @Column(name = "date_create")
-    private LocalDateTime dateCreate;
 
     @Column(name = "command_name")
     private String commandName;
@@ -59,14 +52,5 @@ public class CommandEntity {
     @Column(name = "rus_name")
     private String rusName;
 
-    @PrePersist
-    private void prePersist() {
-        dateCreate = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    private void preUpdate() {
-        dateUpdate = LocalDateTime.now();
-    }
 }
 
