@@ -28,6 +28,9 @@ public class CommandSimpleDto {
     @Schema(description = "Описание")
     private String description;
 
+    @Schema(description = "Описание на русском")
+    private String descriptionRus;
+
     @Schema(description = "Активна ли команда в настоящее время")
     @Builder.Default
     private Boolean isActive = true;

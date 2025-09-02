@@ -27,6 +27,9 @@ public class CommandEntity extends AbstractEntity {
 
     @Column(name = "description")
     private String description;
+    
+    @Column(name = "description_rus")
+    private String descriptionRus;
 
     @Column(name = "is_active")
     @Builder.Default

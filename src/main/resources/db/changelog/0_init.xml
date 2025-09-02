@@ -247,4 +247,9 @@
                                  referencedColumnNames="uid"/>
         <sqlFile path="db/init_alerts.sql"/>
     </changeSet>
+    <changeSet id="add_description_rus" author="dzaitsev">
+        <addColumn tableName="commands">
+            <column name="description_rus" type="varchar(400)"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>
