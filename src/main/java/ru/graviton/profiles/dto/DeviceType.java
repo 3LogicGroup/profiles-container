@@ -7,7 +7,7 @@ public enum DeviceType {
     SERVER("Сервер"),
     PC("ПК"),
     PRINTER("МФУ"),
-    DSS("СХД"),
+    STORAGE("СХД"),
     VIRTUAL("Виртуальный сервер"),
     HYPERVISOR("Гипервизор");
 
