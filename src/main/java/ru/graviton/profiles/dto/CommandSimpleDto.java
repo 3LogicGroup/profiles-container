@@ -47,4 +47,6 @@ public class CommandSimpleDto {
 
     private String target;
 
+    private Boolean favorite;
+
 }

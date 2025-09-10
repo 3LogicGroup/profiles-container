@@ -55,5 +55,8 @@ public class CommandEntity extends AbstractEntity {
     @Column(name = "rus_name")
     private String rusName;
 
+    @Column(name = "is_favorite")
+    private Boolean favorite;
+
 }
 

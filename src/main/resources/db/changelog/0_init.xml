@@ -252,4 +252,9 @@
             <column name="description_rus" type="varchar(400)"/>
         </addColumn>
     </changeSet>
+    <changeSet id="add_is_favorite" author="dzaitsev">
+        <addColumn tableName="commands">
+            <column name="is_favorite" type="boolean"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>
