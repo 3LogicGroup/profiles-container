@@ -8,8 +8,6 @@ import ru.graviton.profiles.dao.repository.ClientRepository;
 import ru.graviton.profiles.dto.ClientDto;
 import ru.graviton.profiles.mapper.ClientMapper;
 
-import java.util.UUID;
-
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -18,22 +16,27 @@ public class ClientService {
 
     private final ClientMapper clientMapper;
 
-    public ClientDto getClient(UUID uuid) {
-        return clientRepository.findById(uuid)
+    public ClientDto getClient(String email) {
+        return clientRepository.findByEmail(email)
                 .map(clientMapper::toDto)
                 .orElse(null);
     }
 
-    public void addClient(ClientDto clientDto) {
-        ClientEntity clientEntity = clientRepository.findById(clientDto.getUid())
+    public ClientEntity saveClient(ClientDto client) {
+        ClientEntity clientEntity = clientRepository.findByEmail(client.getEmail())
                 .orElse(null);
         if (clientEntity == null) {
-            clientEntity = clientMapper.toEntity(clientDto);
+            clientEntity = clientMapper.toEntity(client);
         } else {
-            clientEntity.setCompanyName(clientDto.getCompanyName());
-            clientEntity.setPublicKey(clientDto.getPublicKey());
+            clientEntity.setCompanyName(client.getCompanyName());
+            clientEntity.setEmail(client.getEmail());
         }
-        clientRepository.save(clientEntity);
+        return clientEntity;
+    }
+
+    public ClientDto addClient(ClientDto clientDto) {
+        ClientEntity clientEntity = saveClient(clientDto);
+        return clientMapper.toDto(clientRepository.save(clientEntity));
     }
 }
 

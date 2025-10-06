@@ -1,7 +1,6 @@
 package ru.graviton.profiles.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -10,9 +9,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.graviton.profiles.dto.license.request.OnlineActivationRequest;
+import ru.graviton.profiles.dto.HybridEncrypted;
+import ru.graviton.profiles.dto.license.ActivationMethod;
 import ru.graviton.profiles.dto.license.response.OnlineActivationResponse;
-import ru.graviton.profiles.service.licenses.OnlineActivationService;
+import ru.graviton.profiles.service.licenses.ActivationService;
 
 @RestController
 @RequestMapping("license/")
@@ -20,15 +20,15 @@ import ru.graviton.profiles.service.licenses.OnlineActivationService;
 @Slf4j
 public class LicenseActivationController {
 
-    private final OnlineActivationService onlineActivationService;
+    private final ActivationService activationService;
 
 
     @PostMapping("/activate")
     public ResponseEntity<OnlineActivationResponse> activateLicense(
-            @Valid @RequestBody OnlineActivationRequest request,
-            HttpServletRequest httpRequest) {
+            @RequestBody HybridEncrypted request, HttpServletRequest httpRequest) {
 
-        OnlineActivationResponse onlineActivationResponse = onlineActivationService.processActivation(request,
+        OnlineActivationResponse onlineActivationResponse = activationService.processActivation(request,
+                ActivationMethod.ONLINE,
                 getClientIpAddress(httpRequest), httpRequest.getHeader("User-Agent"));
 
         HttpStatus status = onlineActivationResponse.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;

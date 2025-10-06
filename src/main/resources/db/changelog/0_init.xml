@@ -396,4 +396,14 @@
             </column>
         </createTable>
     </changeSet>
+    <changeSet id="add_email_clienht" author="dzaitsev">
+        <addColumn tableName="clients">
+            <column name="email" type="varchar(200)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <createIndex tableName="clients" indexName="client_email_idx" unique="true">
+            <column name="email"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

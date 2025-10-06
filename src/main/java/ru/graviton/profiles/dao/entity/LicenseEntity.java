@@ -39,6 +39,7 @@ public class LicenseEntity {
     private LocalDateTime creationDate;
 
     @Column(name = "max_activations")
+    @Builder.Default
     private Integer maxActivations = 1;
 
     @Column(name = "customer_email")

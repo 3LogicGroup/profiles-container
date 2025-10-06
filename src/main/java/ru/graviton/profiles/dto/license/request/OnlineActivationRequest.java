@@ -1,44 +1,49 @@
 package ru.graviton.profiles.dto.license.request;
 
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
+import ru.graviton.profiles.dto.ClientDto;
 
-import java.util.UUID;
-
-@Data
 @Builder
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonPropertyOrder({
+        "requestSignature",
+        "activationData",
+        "client"
+})
 public class OnlineActivationRequest {
 
-    @NotBlank
+    private static final ObjectMapper MAPPER = new ObjectMapper()
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+
     private String requestSignature;
-    @NotBlank
-    private String activationData;
-    @NotNull
-    private UUID clientUid;
+
+    private ActivationData activationData;
+    private ClientDto client;
 
     @Getter
     @Setter
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @JsonPropertyOrder({
+            "licenseKey",
+            "hardwareFingerprint",
+            "applicationVersion",
+            "timestamp"
+    })
     public static class ActivationData {
-
-        @NotBlank(message = "License key is required")
         private String licenseKey;
         private String hardwareFingerprint;
         private String applicationVersion;
         private Long timestamp;
-
-        public static ActivationData fromRow(String row) {
-            String[] split = row.split(":");
-            return ActivationData.builder()
-                    .licenseKey(split[0])
-                    .hardwareFingerprint(split[1])
-                    .applicationVersion(split[2])
-                    .timestamp(Long.parseLong(split[3]))
-                    .build();
-        }
     }
 }

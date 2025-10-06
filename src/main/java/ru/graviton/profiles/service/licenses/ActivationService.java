@@ -1,18 +1,22 @@
 package ru.graviton.profiles.service.licenses;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.graviton.profiles.dao.entity.ClientEntity;
 import ru.graviton.profiles.dao.entity.LicenseActivationHistory;
 import ru.graviton.profiles.dao.entity.LicenseEntity;
-import ru.graviton.profiles.dao.repository.ClientRepository;
 import ru.graviton.profiles.dao.repository.LicenseActivationHistoryRepository;
 import ru.graviton.profiles.dao.repository.LicenseRepository;
+import ru.graviton.profiles.dto.HybridEncrypted;
 import ru.graviton.profiles.dto.license.*;
 import ru.graviton.profiles.dto.license.request.OnlineActivationRequest;
 import ru.graviton.profiles.dto.license.response.OnlineActivationResponse;
+import ru.graviton.profiles.service.ClientService;
+import ru.graviton.profiles.utils.SecureJsonUtils;
 
 import java.security.PublicKey;
 import java.time.Duration;
@@ -23,42 +27,49 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class OnlineActivationService {
+public class ActivationService {
 
     private final LicenseRepository licenseRepository;
     private final LicenseActivationHistoryRepository activationHistoryRepository;
     private final CryptographyService cryptographyService;
     private final NotificationService notificationService;
     private final RateLimitService rateLimitService;
-    private final ClientRepository clientRepository;
+    private final ClientService clientService;
 
 
     @Transactional
-    public OnlineActivationResponse processActivation(OnlineActivationRequest request, String clientIp, String userAgent) {
-        String decrypt;
-        PublicKey publicKey;
+    public OnlineActivationResponse processActivation(HybridEncrypted request, ActivationMethod activationMethod, String clientIp, String userAgent) {
+        OnlineActivationRequest.ActivationData activationData;
         ClientEntity client;
+        PublicKey publicKey;
         try {
-            client = clientRepository.findById(request.getClientUid())
-                    .orElse(null);
-            if (client == null) {
-                log.warn("client not registered: {}", request.getClientUid());
-                return OnlineActivationResponse.failure("Нет информации о клиенте");
+            String decryptedJson = cryptographyService.hybridDecrypt(request);
+            OnlineActivationRequest decryptedRequest = SecureJsonUtils.fromJson(decryptedJson, new TypeReference<>() {
+            });
+            if (decryptedRequest.getClient() == null) {
+                log.error("client not defined");
+                return OnlineActivationResponse.failure("Информация о клиенте не передана");
             }
+
+            if (StringUtils.isEmpty(decryptedRequest.getClient().getEmail())) {
+                log.error("client email not defined");
+                return OnlineActivationResponse.failure("Информация о почте клиенте не передана");
+            }
+            client = clientService.saveClient(decryptedRequest.getClient());
             publicKey = cryptographyService.getPublicKey(client.getPublicKey());
             // Проверяем подпись запроса
-            if (!cryptographyService.verifyActivationRequest(publicKey, request.getActivationData(), request.getRequestSignature())) {
+            if (!cryptographyService.verifyActivationRequest(publicKey, SecureJsonUtils.toJson(decryptedRequest.getActivationData()),
+                    decryptedRequest.getRequestSignature())) {
                 log.warn("Invalid activation request signature from IP: {}", clientIp);
                 return OnlineActivationResponse.failure("Неверная подпись запроса");
             }
-            decrypt = cryptographyService.decrypt(request.getActivationData());
-
+            activationData = decryptedRequest.getActivationData();
         } catch (Exception e) {
             log.error("Error during license activation", e);
             recordFailedActivation(null, clientIp, userAgent, "Внутренняя ошибка сервера");
             return OnlineActivationResponse.failure("Внутренняя ошибка активации");
         }
-        OnlineActivationRequest.ActivationData activationData = OnlineActivationRequest.ActivationData.fromRow(decrypt);
+
         try {
             // Проверяем rate limiting
             if (!rateLimitService.isAllowed(clientIp, "activation", 5, Duration.ofMinutes(10))) {
@@ -76,6 +87,11 @@ public class OnlineActivationService {
             }
 
             LicenseEntity license = licenseOpt.get();
+            if (!license.getCustomerEmail().equalsIgnoreCase(client.getEmail())) {
+                log.warn("License key {} has been issued for another client: {}", activationData.getLicenseKey(), license.getCustomerEmail());
+                recordFailedActivation(activationData, clientIp, userAgent, "лицензионный ключ выпущен для другого клиента");
+                return OnlineActivationResponse.failure("лицензионный ключ выпущен для другого клиента");
+            }
             license.setClient(client);
             // Проверяем статус лицензии
             ValidationResult validation = validateLicenseForActivation(license, activationData);
@@ -99,7 +115,7 @@ public class OnlineActivationService {
             }
 
             // Записываем успешную активацию
-            recordSuccessfulActivation(license, activationData, clientIp, userAgent);
+            recordSuccessfulActivation(license, activationData, clientIp, userAgent, activationMethod);
 
             // Обновляем статус лицензии
             if (license.getStatus() != LicenseStatus.ACTIVATED) {
@@ -112,7 +128,7 @@ public class OnlineActivationService {
 
             log.info("Successfully activated license {} for hardware {}",
                     license.getLicenseKey(), activationData.getHardwareFingerprint());
-            String encrypt = cryptographyService.encrypt(LicenseData.builder()
+            LicenseData licenseData = LicenseData.builder()
                     .licenseKey(license.getLicenseKey())
                     .licenseType(license.getLicenseType())
                     .issuedDate(license.getCreationDate().atZone(ZoneId.systemDefault())
@@ -120,10 +136,11 @@ public class OnlineActivationService {
                             .toEpochMilli())
                     .customerCompany(license.getCustomerName())
                     .hardwareFingerprint(activationData.getHardwareFingerprint())
-                    .build()
-                    .toRow(), publicKey);
-
-            return OnlineActivationResponse.success(encrypt, cryptographyService.signData(encrypt));
+                    .build();
+            HybridEncrypted encryptedLicenseData = cryptographyService.hybridEncrypt(SecureJsonUtils.toJson(licenseData), publicKey);
+            String sign = cryptographyService.signData(SecureJsonUtils.toJson(encryptedLicenseData));
+            OnlineActivationResponse.ActivationResult result = new OnlineActivationResponse.ActivationResult(sign, encryptedLicenseData);
+            return OnlineActivationResponse.success(cryptographyService.hybridEncrypt(SecureJsonUtils.toJson(result), publicKey));
         } catch (Exception e) {
             log.error("Error during license activation", e);
             recordFailedActivation(activationData, clientIp, userAgent, "Внутренняя ошибка сервера");
@@ -177,7 +194,7 @@ public class OnlineActivationService {
     }
 
     private void recordSuccessfulActivation(LicenseEntity license, OnlineActivationRequest.ActivationData request,
-                                            String clientIp, String userAgent) {
+                                            String clientIp, String userAgent, ActivationMethod activationMethod) {
         LicenseActivationHistory history = LicenseActivationHistory.builder()
                 .license(license)
                 .hardwareFingerprint(request.getHardwareFingerprint())
@@ -185,7 +202,7 @@ public class OnlineActivationService {
                 .clientIp(clientIp)
                 .userAgent(userAgent)
                 .applicationVersion(request.getApplicationVersion())
-                .activationMethod(ActivationMethod.ONLINE)
+                .activationMethod(activationMethod)
                 .status(ActivationStatus.SUCCESS)
                 .build();
 

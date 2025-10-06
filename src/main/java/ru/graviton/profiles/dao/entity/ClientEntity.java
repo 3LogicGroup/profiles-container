@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,9 +21,12 @@ public class ClientEntity {
     @Column(name = "company_name")
     private String companyName;
 
+    @Column(name = "email")
+    private String email;
+
     @Column(name = "public_key")
     private String publicKey;
 
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<LicenseEntity> licenses;
+    private List<LicenseEntity> licenses=new ArrayList<>();
 }

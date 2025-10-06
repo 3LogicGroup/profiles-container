@@ -1,15 +1,29 @@
 package ru.graviton.profiles.dto.license.response;
 
-import lombok.Builder;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.*;
+import ru.graviton.profiles.dto.HybridEncrypted;
 
 @Data
 @Builder
 public class OnlineActivationResponse {
     private boolean success;
     private String message;
-    private String signature;
-    private String licenseData;
+    private HybridEncrypted encrypted;
+
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @JsonPropertyOrder({
+            "signature",
+            "licenseData"
+    })
+    public static class ActivationResult {
+        private String signature;
+        private HybridEncrypted licenseData;
+    }
 
     public static OnlineActivationResponse failure(String message) {
         return OnlineActivationResponse.builder()
@@ -18,10 +32,9 @@ public class OnlineActivationResponse {
                 .build();
     }
 
-    public static OnlineActivationResponse success(String licenseData, String signature) {
+    public static OnlineActivationResponse success(HybridEncrypted encrypted) {
         return OnlineActivationResponse.builder()
-                .signature(signature)
-                .licenseData(licenseData)
+                .encrypted(encrypted)
                 .message("Лицензия активирована успешно")
                 .success(true)
                 .build();

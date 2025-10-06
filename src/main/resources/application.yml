@@ -1,4 +1,30 @@
 spring:
+  mail:
+    from: ${MAIL_USERNAME}
+    host: ${MAIL_SMTP_HOST}       # SMTP host
+    port: ${MAIL_PORT}       # SMTP port
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    protocol: smtps
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+        imap:
+          host: ${MAIL_IMAP_HOST}
+          port: ${MAIL_IMAP_PORT:993}
+          username: ${MAIL_USERNAME}
+          password: ${MAIL_PASSWORD}
+          auth: true
+          ssl.enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
   liquibase:
     change-log: classpath:db/db.changelog-master.xml
     enabled: true
