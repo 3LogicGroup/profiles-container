@@ -22,6 +22,7 @@ import java.security.PublicKey;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Optional;
 
 @Service
@@ -93,6 +94,10 @@ public class ActivationService {
                 return OnlineActivationResponse.failure("лицензионный ключ выпущен для другого клиента");
             }
             license.setClient(client);
+            if (client.getLicenses() == null) {
+                client.setLicenses(new ArrayList<>());
+            }
+            client.getLicenses().add(license);
             // Проверяем статус лицензии
             ValidationResult validation = validateLicenseForActivation(license, activationData);
             if (!validation.isValid()) {
