@@ -93,6 +93,7 @@ public class ActivationService {
                 recordFailedActivation(activationData, clientIp, userAgent, "лицензионный ключ выпущен для другого клиента");
                 return OnlineActivationResponse.failure("лицензионный ключ выпущен для другого клиента");
             }
+            clientService
             license.setClient(client);
             if (client.getLicenses() == null) {
                 client.setLicenses(new ArrayList<>());

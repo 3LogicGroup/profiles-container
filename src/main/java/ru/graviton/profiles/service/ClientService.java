@@ -31,6 +31,7 @@ public class ClientService {
             clientEntity.setCompanyName(client.getCompanyName());
             clientEntity.setEmail(client.getEmail());
         }
+        clientRepository.save(clientEntity);
         return clientEntity;
     }
 
