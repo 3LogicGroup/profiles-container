@@ -1,6 +1,7 @@
 package ru.graviton.profiles.mapper;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import ru.graviton.profiles.dao.entity.AlertRuleEntity;
 import ru.graviton.profiles.dto.AlertRule;
 import ru.graviton.profiles.dto.AlertRuleLight;
@@ -11,6 +12,7 @@ import ru.graviton.profiles.dto.AlertRuleLight;
 @Mapper(componentModel = "spring", uses = NotificationRuleMapper.class)
 public interface AlertRuleMapper {
 
+    @Mapping(target = "masterRule", source = "isMasterRule")
     AlertRule toDto(AlertRuleEntity entity);
 
 }

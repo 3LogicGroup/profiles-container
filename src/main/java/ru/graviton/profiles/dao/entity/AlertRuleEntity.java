@@ -58,6 +58,16 @@ public class AlertRuleEntity extends AbstractEntity {
             inverseJoinColumns = {@JoinColumn(name = "notification_uid")})
     private Set<NotificationRuleEntity> notificationRules;
 
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "superior_alert_rules",
+            joinColumns = {@JoinColumn(name = "rule_uid")},
+            inverseJoinColumns = {@JoinColumn(name = "superior_rule_uid")})
+    private Set<AlertRuleEntity> superiorRules;
+
+    @ManyToMany(mappedBy = "superiorRules")
+    private Set<AlertRuleEntity> subordinateRules;
+
+    private Boolean isMasterRule;
 
     public Set<AlertGroupEntity> getAlertGroups() {
         if (alertGroups == null) {

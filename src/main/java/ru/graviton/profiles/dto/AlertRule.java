@@ -41,5 +41,7 @@ public class AlertRule {
     @Schema(description = "Правила уведомлений")
     private List<NotificationRule> notificationRules = new ArrayList<>();
 
-    private Set<UUID> targetUids;
+    private Set<AlertRule> superiorRules;
+
+    private boolean isMasterRule;
 }

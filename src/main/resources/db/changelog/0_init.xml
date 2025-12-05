@@ -406,4 +406,29 @@
             <column name="email"/>
         </createIndex>
     </changeSet>
+    <changeSet id="add_superior_rules" author="dzaitsev">
+        <createTable tableName="superior_alert_rules">
+            <column name="rule_uid" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="superior_rule_uid" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="superior_alert_rules" columnNames="rule_uid, superior_rule_uid"/>
+
+        <addForeignKeyConstraint baseTableName="superior_alert_rules" baseColumnNames="rule_uid"
+                                 constraintName="superior_alert_rules_rule_fk"
+                                 referencedTableName="alert_rules"
+                                 referencedColumnNames="uid"/>
+        <addForeignKeyConstraint baseTableName="superior_alert_rules" baseColumnNames="superior_rule_uid"
+                                 constraintName="superior_alert_rules_superior_rule_fk"
+                                 referencedTableName="alert_rules"
+                                 referencedColumnNames="uid"/>
+    </changeSet>
+    <changeSet id="add_is_master_rule" author="dzaitsev">
+        <addColumn tableName="alert_rules">
+            <column name="is_master_rule" type="boolean"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>
