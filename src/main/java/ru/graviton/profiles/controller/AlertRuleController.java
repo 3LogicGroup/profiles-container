@@ -34,7 +34,7 @@ public class AlertRuleController {
                                                      CreateAlertRuleRequest request) {
         return ResultResponse.of(alertRuleService.createAlertRule(request.getAlertGroupUids(), request.getName(),
                 request.getDescription(), request.getExpression(), request.getIsPromQLExpression(), request.getSeverity(), request.getAlertRuleType(),
-                request.getNotificationRuleUids()));
+                request.getNotificationRuleUids(), request.getSuperiorRules(), request.isMasterRule()));
     }
 
     @GetMapping("list")
@@ -88,7 +88,8 @@ public class AlertRuleController {
     public ResultResponse<AlertRule> updateAlertRule(@RequestBody @Validated @Parameter(description = "Запрос на обновление")
                                                      UpdateAlertRuleRequest request) {
         return ResultResponse.of(alertRuleService.updateAlertRule(request.getUid(), request.getAlertGroupUids(), request.getName(),
-                request.getDescription(), request.getExpression(), request.getIsPromQLExpression(), request.getSeverity(), request.getAlertRuleType()));
+                request.getDescription(), request.getExpression(), request.getIsPromQLExpression(), request.getSeverity(), request.getAlertRuleType(),
+                request.getSuperiorRules(), request.isMasterRule()));
     }
 
     @PatchMapping("link-notification-rule")

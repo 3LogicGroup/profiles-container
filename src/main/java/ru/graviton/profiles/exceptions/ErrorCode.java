@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @Getter
 public enum ErrorCode {
+    ALERT_RULE_REQUEST_ERROR("Не удалось создать/обновить правило, некорректный запрос", HttpStatus.BAD_REQUEST),
     PROM_NOT_AVAILABLE("Prometheus не доступен", HttpStatus.NOT_FOUND),
     PROM_RELOAD_CONFIG_ERROR("Ошибка сохранения конфигурации Prometheus", HttpStatus.INTERNAL_SERVER_ERROR),
     PROM_ADD_JOB("Ошибка добавления задания в Prometheus", HttpStatus.BAD_REQUEST),

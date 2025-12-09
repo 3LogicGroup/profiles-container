@@ -34,7 +34,7 @@ public class AlertRuleService {
 
     @Transactional
     public AlertRule createAlertRule(Set<UUID> alertGroupUid, String name, String description, String expression, Boolean isProQL, Severity severity,
-                                     AlertRuleType alertRuleType, Set<UUID> notificationRuleUids) {
+                                     AlertRuleType alertRuleType, Set<UUID> notificationRuleUids,Set<UUID> superiorRulesUids, boolean isMasterRule) {
         //todo: validate expression
         List<AlertGroupEntity> alertGroupEntities = Optional.ofNullable(alertGroupUid)
                 .map(alertGroupRepository::findAllById)
@@ -43,7 +43,10 @@ public class AlertRuleService {
                 .map(notificationRuleRepository::findAllById)
                 .map(HashSet::new)
                 .orElse(null);
-        //todo:
+        Set<AlertRuleEntity> superiorRules = Optional.ofNullable(superiorRulesUids)
+                .map(alertRuleRepository::findAllById)
+                .map(HashSet::new)
+                .orElse(new HashSet<>());
         AlertRuleEntity alertRule = AlertRuleEntity.builder()
                 .ruleName(name)
                 .description(description)
@@ -53,6 +56,8 @@ public class AlertRuleService {
                 .alertRuleType(Optional.ofNullable(alertRuleType).orElse(AlertRuleType.OTHER))
                 .notificationRules(notificationRuleEntities)
                 .enabled(true)
+                .superiorRules(superiorRules)
+                .isMasterRule(isMasterRule)
                 .build();
         if (!CollectionUtils.isEmpty(alertGroupEntities)) {
             alertGroupEntities.forEach(alertGroupEntity -> {
@@ -120,14 +125,27 @@ public class AlertRuleService {
 
     @Transactional
     public AlertRule updateAlertRule(UUID uid, Set<UUID> alertGroupUids, String name, String description, String expression, Boolean isPromQL,
-                                     Severity severity, AlertRuleType alertRuleType) {
+                                     Severity severity, AlertRuleType alertRuleType,
+                                     Set<UUID> superiorRulesUids, boolean isMasterRule) {
+        if (superiorRulesUids.contains(uid)) {
+            throw ErrorCode.ALERT_RULE_REQUEST_ERROR.generateException("Текущее правило нельзя сделать вышестоящим");
+        }
         AlertRuleEntity alertRuleEntityByUid = getAlertRuleEntityByUid(uid);
+        alertRuleEntityByUid.getSuperiorRules().clear();
+        if (!superiorRulesUids.isEmpty()) {
+            Set<AlertRuleEntity> superiorRules = Optional.of(superiorRulesUids)
+                    .map(alertRuleRepository::findAllById)
+                    .map(HashSet::new)
+                    .orElse(new HashSet<>());
+            alertRuleEntityByUid.getSuperiorRules().addAll(superiorRules);
+        }
         alertRuleEntityByUid.setRuleName(name);
         alertRuleEntityByUid.setDescription(description);
         alertRuleEntityByUid.setExpression(expression);
         alertRuleEntityByUid.setSeverity(severity);
         alertRuleEntityByUid.setIsPrometheusExpression(isPromQL);
         alertRuleEntityByUid.setAlertRuleType(Optional.ofNullable(alertRuleType).orElse(AlertRuleType.OTHER));
+        alertRuleEntityByUid.setIsMasterRule(isMasterRule);
         if (CollectionUtils.isNotEmpty(alertGroupUids)) {
             Set<AlertGroupEntity> cleared = alertRuleEntityByUid.getAlertGroups().stream()
                     .filter(f -> !alertGroupUids.contains(f.getUid()))

@@ -8,6 +8,7 @@ import lombok.Setter;
 import ru.graviton.profiles.dto.AlertRuleType;
 import ru.graviton.profiles.dto.Severity;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -37,4 +38,8 @@ public abstract class AlertRuleRequest {
 
     @Schema(description = "Тип правила", example = "OTHER")
     private AlertRuleType alertRuleType;
+
+    private Set<UUID> superiorRules = new HashSet<>();
+
+    private boolean isMasterRule = false;
 }
