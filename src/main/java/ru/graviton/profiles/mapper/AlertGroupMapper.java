@@ -9,7 +9,7 @@ import ru.graviton.profiles.dto.AlertGroup;
 /**
  * Маппер для AlertRule
  */
-@Mapper(componentModel = "spring", uses = NotificationRuleMapper.class)
+@Mapper(componentModel = "spring", uses = {NotificationRuleMapper.class, AlertRuleMapper.class})
 public interface AlertGroupMapper {
 
     @Mapping(target = "alertRules", source = "rules")
