@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -63,4 +64,8 @@ public class NotificationRule {
     public Long getInitialDelay() {
         return Optional.ofNullable(initialDelay).orElse(alertDelay);
     }
+
+    private LocalDateTime dateUpdate;
+
+    private LocalDateTime dateCreate;
 }
