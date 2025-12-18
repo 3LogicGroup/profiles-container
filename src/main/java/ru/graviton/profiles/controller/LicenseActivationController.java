@@ -31,7 +31,7 @@ public class LicenseActivationController {
                 ActivationMethod.ONLINE,
                 getClientIpAddress(httpRequest), httpRequest.getHeader("User-Agent"));
 
-        HttpStatus status = onlineActivationResponse.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
+        HttpStatus status = HttpStatus.OK;
         return ResponseEntity.status(status).body(onlineActivationResponse);
     }
 
