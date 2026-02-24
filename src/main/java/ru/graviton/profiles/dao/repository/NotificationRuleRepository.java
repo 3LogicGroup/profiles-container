@@ -26,6 +26,9 @@ public interface NotificationRuleRepository extends JpaRepository<NotificationRu
     @Query("select n from NotificationRuleEntity n where n.uid=?1")
     Optional<NotificationRuleEntity> findActiveNotificationRuleByUid(UUID ruleUid);
 
+    @Query("select n from NotificationRuleEntity n where n.enabled")
+    List<NotificationRuleEntity> findActiveNotificationRulesByUid();
+
     default Page<NotificationRuleEntity> findAllEnabledNotificationRules(Boolean enabled, String name, Pageable pageable) {
         var predicates = Specification.allOf(
                 Specs.enabled(enabled),
