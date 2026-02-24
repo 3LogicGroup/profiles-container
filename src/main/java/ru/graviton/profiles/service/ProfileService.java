@@ -52,7 +52,8 @@ public class ProfileService {
                 device_type varchar(50) NULL,
                 model varchar(255) NULL,
                 CONSTRAINT "profileTempPK" PRIMARY KEY (uid)
-                );""");
+                );
+                """);
         sb.append("""
                 DROP TABLE IF EXISTS public.profiles_data_temp;
                 CREATE TABLE public.profiles_data_temp (

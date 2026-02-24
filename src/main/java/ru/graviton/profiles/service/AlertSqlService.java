@@ -43,7 +43,8 @@ public class AlertSqlService {
                 is_prometheus_expression bool NULL,
                 is_master_rule bool NULL,
                 CONSTRAINT "alertRuleTempPK" PRIMARY KEY (uid)
-                );""");
+                );
+                """);
         sb.append("""
                 DROP TABLE IF EXISTS public.alert_groups_temp;
                 CREATE TABLE public.alert_groups_temp (
@@ -54,7 +55,8 @@ public class AlertSqlService {
                 date_create timestamp NOT NULL,
                 date_update timestamp NULL,
                 CONSTRAINT "alertGroupTempPK" PRIMARY KEY (uid)
-                );""");
+                );
+                """);
         sb.append(
                 """
                 DROP TABLE IF EXISTS public.notification_rules_temp;
@@ -72,7 +74,8 @@ public class AlertSqlService {
                 enabled bool NOT NULL,
                 initial_delay int4 NULL,
                 CONSTRAINT "notificationRuleTempPK" PRIMARY KEY (uid)
-                );""");
+                );
+                """);
         sb.append("""
                 DROP TABLE IF EXISTS public.alert_groups_notifications_temp;
                 CREATE TABLE public.alert_groups_notifications_temp (
@@ -87,14 +90,16 @@ public class AlertSqlService {
                 group_uid uuid NOT NULL,
                 rule_uid uuid NOT NULL,
                 CONSTRAINT alert_groups_rules_temp_pkey PRIMARY KEY (rule_uid, group_uid)
-                );""");
+                );
+                """);
         sb.append("""
                 DROP TABLE IF EXISTS public.alert_rules_notifications_temp;
                 CREATE TABLE public.alert_rules_notifications_temp (
                 rule_uid uuid NOT NULL,
                 notification_uid uuid NOT NULL,
                 CONSTRAINT alert_rules_notifications_temp_pkey PRIMARY KEY (notification_uid, rule_uid)
-                );""");
+                );
+                """);
         for (NotificationRuleEntity n : notifications) {
             String json = toJson(n.getNotificationRule());
 
