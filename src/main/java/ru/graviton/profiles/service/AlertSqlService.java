@@ -28,11 +28,77 @@ public class AlertSqlService {
         List<AlertRuleEntity> alertRules = alertRuleRepository.getActiveAlertRules();
         List<AlertGroupEntity> alertGroups = alertGroupRepository.getActiveAlertGroups();
         StringBuilder sb = new StringBuilder();
-
+        sb.append("""
+                DROP TABLE IF EXISTS public.alert_rules_temp;
+                CREATE TABLE public.alert_rules_temp (
+                uid uuid NOT NULL,
+                rule_name varchar(200) NOT NULL,
+                description varchar(1000) NULL,
+                enabled bool NOT NULL,
+                rule_expression varchar(4000) NOT NULL,
+                severity varchar(100) NOT NULL,
+                date_create timestamp NOT NULL,
+                date_update timestamp NULL,
+                alert_rule_type varchar(50) NULL,
+                is_prometheus_expression bool NULL,
+                is_master_rule bool NULL,
+                CONSTRAINT "alertRuleTempPK" PRIMARY KEY (uid)
+                );""");
+        sb.append("""
+                DROP TABLE IF EXISTS public.alert_groups_temp;
+                CREATE TABLE public.alert_groups_temp (
+                uid uuid NOT NULL,
+                enabled bool NOT NULL,
+                group_name varchar(200) NOT NULL,
+                description varchar(1000) NULL,
+                date_create timestamp NOT NULL,
+                date_update timestamp NULL,
+                CONSTRAINT "alertGroupTempPK" PRIMARY KEY (uid)
+                );""");
+        sb.append(
+                """
+                DROP TABLE IF EXISTS public.notification_rules_temp;
+                CREATE TABLE public.notification_rules_temp (
+                uid uuid NOT NULL,
+                notification_type varchar(100) NOT NULL,
+                notification_name varchar(255) NOT NULL,
+                notification_description varchar(1000) NOT NULL,
+                notification_rule jsonb NOT NULL,
+                fire_message_template varchar(8000) NOT NULL,
+                resolve_message_template varchar(8000) NOT NULL,
+                alert_delay int4 NOT NULL,
+                date_create timestamp NOT NULL,
+                date_update timestamp NULL,
+                enabled bool NOT NULL,
+                initial_delay int4 NULL,
+                CONSTRAINT "notificationRuleTempPK" PRIMARY KEY (uid)
+                );""");
+        sb.append("""
+                DROP TABLE IF EXISTS public.alert_groups_notifications_temp;
+                CREATE TABLE public.alert_groups_notifications_temp (
+                group_uid uuid NOT NULL,
+                notification_uid uuid NOT NULL,
+                CONSTRAINT alert_groups_notifications_temp_pkey PRIMARY KEY (notification_uid, group_uid)
+                );
+                """);
+        sb.append("""
+                DROP TABLE IF EXISTS public.alert_groups_rules_temp;
+                CREATE TABLE public.alert_groups_rules_temp (
+                group_uid uuid NOT NULL,
+                rule_uid uuid NOT NULL,
+                CONSTRAINT alert_groups_rules_temp_pkey PRIMARY KEY (rule_uid, group_uid)
+                );""");
+        sb.append("""
+                DROP TABLE IF EXISTS public.alert_rules_notifications_temp;
+                CREATE TABLE public.alert_rules_notifications_temp (
+                rule_uid uuid NOT NULL,
+                notification_uid uuid NOT NULL,
+                CONSTRAINT alert_rules_notifications_temp_pkey PRIMARY KEY (notification_uid, rule_uid)
+                );""");
         for (NotificationRuleEntity n : notifications) {
             String json = toJson(n.getNotificationRule());
 
-            sb.append("INSERT INTO notification_rules (uid, notification_type, notification_name, notification_description, ")
+            sb.append("INSERT INTO notification_rules_temp (uid, notification_type, notification_name, notification_description, ")
                     .append("notification_rule, fire_message_template, resolve_message_template, alert_delay, ")
                     .append("date_create, date_update, enabled, initial_delay) VALUES (")
                     .append("'").append(n.getUid()).append("', ")
@@ -62,7 +128,7 @@ public class AlertSqlService {
 
         for (AlertRuleEntity r : alertRules) {
 
-            sb.append("INSERT INTO alert_rules (uid, rule_name, description, enabled, rule_expression, severity, ")
+            sb.append("INSERT INTO alert_rules_temp (uid, rule_name, description, enabled, rule_expression, severity, ")
                     .append("date_create, date_update, alert_rule_type, is_prometheus_expression, is_master_rule) VALUES (")
                     .append("'").append(r.getUid()).append("', ")
                     .append("'").append(esc(r.getRuleName())).append("', ")
@@ -89,7 +155,7 @@ public class AlertSqlService {
 
         for (AlertGroupEntity g : alertGroups) {
 
-            sb.append("INSERT INTO alert_groups (uid, enabled, group_name, description, date_create, date_update) VALUES (")
+            sb.append("INSERT INTO alert_groups_temp (uid, enabled, group_name, description, date_create, date_update) VALUES (")
                     .append("'").append(g.getUid()).append("', ")
                     .append(g.isEnabled()).append(", ")
                     .append("'").append(esc(g.getGroupName())).append("', ")
@@ -105,7 +171,7 @@ public class AlertSqlService {
 
         for (AlertRuleEntity r : alertRules) {
             for (NotificationRuleEntity n : safe(r.getNotificationRules())) {
-                sb.append("INSERT INTO alert_rules_notifications (rule_uid, notification_uid) VALUES ('")
+                sb.append("INSERT INTO alert_rules_notifications_temp (rule_uid, notification_uid) VALUES ('")
                         .append(r.getUid()).append("','")
                         .append(n.getUid())
                         .append("') ON CONFLICT DO NOTHING;\n");
@@ -115,14 +181,14 @@ public class AlertSqlService {
         for (AlertGroupEntity g : alertGroups) {
 
             for (AlertRuleEntity r : safe(g.getRules())) {
-                sb.append("INSERT INTO alert_groups_rules (group_uid, rule_uid) VALUES ('")
+                sb.append("INSERT INTO alert_groups_rules_temp (group_uid, rule_uid) VALUES ('")
                         .append(g.getUid()).append("','")
                         .append(r.getUid())
                         .append("') ON CONFLICT DO NOTHING;\n");
             }
 
             for (NotificationRuleEntity n : safe(g.getNotificationRules())) {
-                sb.append("INSERT INTO alert_groups_notifications (group_uid, notification_uid) VALUES ('")
+                sb.append("INSERT INTO alert_groups_notifications_temp (group_uid, notification_uid) VALUES ('")
                         .append(g.getUid()).append("','")
                         .append(n.getUid())
                         .append("') ON CONFLICT DO NOTHING;\n");

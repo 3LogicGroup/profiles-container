@@ -39,9 +39,33 @@ public class ProfileService {
 
     private String getProfilesSql(List<ProfileEntity> profiles) {
         StringBuilder sb = new StringBuilder();
-
+        sb.append("""
+                DROP TABLE IF EXISTS public.profiles_temp;
+                CREATE TABLE public.profiles_temp (
+                uid uuid NOT NULL,
+                profile_name varchar(50) NOT NULL,
+                date_create timestamp NOT NULL,
+                date_update timestamp NULL,
+                active bool NOT NULL,
+                product_name varchar(255) NULL,
+                product_name_rus varchar(255) NULL,
+                device_type varchar(50) NULL,
+                model varchar(255) NULL,
+                CONSTRAINT "profileTempPK" PRIMARY KEY (uid)
+                );""");
+        sb.append("""
+                DROP TABLE IF EXISTS public.profiles_data_temp;
+                CREATE TABLE public.profiles_data_temp (
+                profile_uid uuid NOT NULL,
+                protocol varchar(50) NOT NULL,
+                profile_data jsonb NOT NULL,
+                scrape_interval int4 NULL,
+                scrape_timeout int4 NULL,
+                CONSTRAINT profiles_data_temp_pkey PRIMARY KEY (profile_uid, protocol)
+                );
+                """);
         for (ProfileEntity p : profiles) {
-            sb.append("INSERT INTO profiles (uid, profile_name, date_create, date_update, active, product_name, product_name_rus, device_type, model) VALUES (")
+            sb.append("INSERT INTO profiles_temp (uid, profile_name, date_create, date_update, active, product_name, product_name_rus, device_type, model) VALUES (")
                     .append("'").append(p.getUid()).append("', ")
                     .append("'").append(escapeSql(p.getProfileName())).append("', ")
                     .append("'").append(p.getDateCreate()).append("', ")
@@ -70,7 +94,7 @@ public class ProfileService {
                     throw new RuntimeException("Failed to serialize profileData JSON", ex);
                 }
 
-                sb.append("INSERT INTO profiles_data (profile_uid, protocol, profile_data, scrape_interval, scrape_timeout) VALUES (")
+                sb.append("INSERT INTO profiles_data_temp (profile_uid, protocol, profile_data, scrape_interval, scrape_timeout) VALUES (")
                         .append("'").append(p.getUid()).append("', ")
                         .append("'").append(d.getProtocol().name()).append("', ")
                         .append("'").append(escapeSql(profileDataJson)).append("', ")
