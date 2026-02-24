@@ -1,5 +1,6 @@
 package ru.graviton.profiles.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,10 +23,72 @@ public class ProfileService {
     private final ProfileRepository profileRepository;
 
     private final ProfileMapper profileMapper;
+    private final ObjectMapper objectMapper;
 
 
     public boolean existTargetProfileLink(UUID profileUid, UUID targetUid, Protocol protocol) {
         return profileRepository.existTargetProfileLink(profileUid, targetUid, protocol);
+    }
+
+    @Transactional
+    public String getProfilesSQL() {
+        return getProfilesSql(profileRepository.findAll().stream()
+                .filter(ProfileEntity::isActive)
+                .toList());
+    }
+
+    private String getProfilesSql(List<ProfileEntity> profiles) {
+        StringBuilder sb = new StringBuilder();
+
+        for (ProfileEntity p : profiles) {
+            sb.append("INSERT INTO profiles (uid, profile_name, date_create, date_update, active, product_name, product_name_rus, device_type, model) VALUES (")
+                    .append("'").append(p.getUid()).append("', ")
+                    .append("'").append(escapeSql(p.getProfileName())).append("', ")
+                    .append("'").append(p.getDateCreate()).append("', ")
+                    .append(p.getDateUpdate() != null ? "'" + p.getDateUpdate() + "'" : "NULL").append(", ")
+                    .append(p.isActive()).append(", ")
+                    .append(p.getProductName() != null ? "'" + escapeSql(p.getProductName()) + "'" : "NULL").append(", ")
+                    .append(p.getProductNameRus() != null ? "'" + escapeSql(p.getProductNameRus()) + "'" : "NULL").append(", ")
+                    .append(p.getDeviceType() != null ? "'" + p.getDeviceType().name() + "'" : "NULL").append(", ")
+                    .append(p.getModel() != null ? "'" + escapeSql(p.getModel()) + "'" : "NULL")
+                    .append(") ON CONFLICT (uid) DO UPDATE SET ")
+                    .append("profile_name = EXCLUDED.profile_name, ")
+                    .append("date_create = EXCLUDED.date_create, ")
+                    .append("date_update = EXCLUDED.date_update, ")
+                    .append("active = EXCLUDED.active, ")
+                    .append("product_name = EXCLUDED.product_name, ")
+                    .append("product_name_rus = EXCLUDED.product_name_rus, ")
+                    .append("device_type = EXCLUDED.device_type, ")
+                    .append("model = EXCLUDED.model;\n");
+
+            Set<ProfileDataEntity> dataList = p.getProfileDataList();
+            for (ProfileDataEntity d : dataList) {
+                String profileDataJson;
+                try {
+                    profileDataJson = objectMapper.writeValueAsString(d.getProfileData());
+                } catch (Exception ex) {
+                    throw new RuntimeException("Failed to serialize profileData JSON", ex);
+                }
+
+                sb.append("INSERT INTO profiles_data (profile_uid, protocol, profile_data, scrape_interval, scrape_timeout) VALUES (")
+                        .append("'").append(p.getUid()).append("', ")
+                        .append("'").append(d.getProtocol().name()).append("', ")
+                        .append("'").append(escapeSql(profileDataJson)).append("', ")
+                        .append(d.getScrapeInterval()).append(", ")
+                        .append(d.getScrapeTimeout())
+                        .append(") ON CONFLICT (profile_uid, protocol) DO UPDATE SET ")
+                        .append("profile_data = EXCLUDED.profile_data, ")
+                        .append("scrape_interval = EXCLUDED.scrape_interval, ")
+                        .append("scrape_timeout = EXCLUDED.scrape_timeout;\n");
+            }
+        }
+
+        return sb.toString();
+    }
+
+    private String escapeSql(String s) {
+        if (s == null) return null;
+        return s.replace("'", "''");
     }
 
     @Transactional
