@@ -3,6 +3,7 @@ package ru.graviton.profiles.dto.metrics;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,6 +24,8 @@ public class IpmiMetric {
     private String metricName;
 
     private String valueField;
+
+    private Boolean onlyActiveSensor = true;
 
     @NotBlank
     private Type type;
