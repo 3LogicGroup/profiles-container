@@ -5,11 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import ru.graviton.profiles.dao.entity.IpmiProfile;
-import ru.graviton.profiles.dto.metrics.IpmiMetricGroup;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -26,9 +22,6 @@ public class IpmiApiProfile extends AbstractApiProfileData<IpmiProfile> {
     private String login;
     private String password;
 
-    private Map<String, String> info;
-    @Builder.Default
-    private List<IpmiMetricGroup> metricsGroups = new ArrayList<>();
     @Builder.Default
     private boolean enable = true;
 
@@ -43,8 +36,6 @@ public class IpmiApiProfile extends AbstractApiProfileData<IpmiProfile> {
         return IpmiProfile.builder()
                 .login(getLogin())
                 .password(getPassword())
-                .info(getInfo())
-                .metricsGroups(getMetricsGroups())
                 .build();
     }
 }

@@ -10,7 +10,6 @@ import lombok.experimental.SuperBuilder;
 import ru.graviton.profiles.dao.entity.RedfishProfile;
 import ru.graviton.profiles.dto.inventory.RedfishInventoryGroup;
 import ru.graviton.profiles.dto.metrics.RedfishMetricGroup;
-import ru.graviton.profiles.dto.metrics.UiApiData;
 
 import java.util.List;
 
@@ -37,8 +36,6 @@ public class RedfishApiProfile extends AbstractApiProfileData<RedfishProfile> {
 
     private List<RedfishInventoryGroup> inventoryGroups;
 
-    private UiApiData uiApiData;
-
     private String selfPath;
 
     @Override
@@ -50,7 +47,6 @@ public class RedfishApiProfile extends AbstractApiProfileData<RedfishProfile> {
                 .systemsSelf(getSystemsSelf())
                 .metricsGroups(getMetricsGroups())
                 .inventoryGroups(getInventoryGroups())
-                .uiApiData(getUiApiData())
                 .build();
     }
 }

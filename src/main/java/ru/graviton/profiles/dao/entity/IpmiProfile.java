@@ -6,11 +6,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import ru.graviton.profiles.dto.IpmiApiProfile;
 import ru.graviton.profiles.dto.Protocol;
-import ru.graviton.profiles.dto.metrics.IpmiMetricGroup;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -28,11 +24,6 @@ public class IpmiProfile extends AbstractProfileData<IpmiApiProfile> {
 
     private String password;
 
-    private Map<String, String> info;
-
-    @Builder.Default
-    private List<IpmiMetricGroup> metricsGroups = new ArrayList<>();
-
     @Builder.Default
     private boolean enable = true;
 
@@ -47,8 +38,6 @@ public class IpmiProfile extends AbstractProfileData<IpmiApiProfile> {
         return IpmiApiProfile.builder()
                 .login(getLogin())
                 .password(getPassword())
-                .info(getInfo())
-                .metricsGroups(getMetricsGroups())
                 .enable(enable)
                 .build();
     }

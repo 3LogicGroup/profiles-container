@@ -11,7 +11,6 @@ import ru.graviton.profiles.dto.Protocol;
 import ru.graviton.profiles.dto.RedfishApiProfile;
 import ru.graviton.profiles.dto.inventory.RedfishInventoryGroup;
 import ru.graviton.profiles.dto.metrics.RedfishMetricGroup;
-import ru.graviton.profiles.dto.metrics.UiApiData;
 
 import java.util.List;
 
@@ -38,8 +37,6 @@ public class RedfishProfile extends AbstractProfileData<RedfishApiProfile> {
     private List<RedfishMetricGroup> metricsGroups;
     private List<RedfishInventoryGroup> inventoryGroups;
 
-    private UiApiData uiApiData;
-
     @Override
     public RedfishApiProfile toApiProfile() {
         return RedfishApiProfile.builder()
@@ -49,7 +46,6 @@ public class RedfishProfile extends AbstractProfileData<RedfishApiProfile> {
                 .systemsSelf(getSystemsSelf())
                 .metricsGroups(getMetricsGroups())
                 .inventoryGroups(getInventoryGroups())
-                .uiApiData(getUiApiData())
                 .build();
     }
 
